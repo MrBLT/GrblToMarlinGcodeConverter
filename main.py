@@ -1,4 +1,3 @@
-#!C:\Dev\Anaconda\python.exe
 import re
 import os
 import sys
@@ -16,12 +15,14 @@ G1Speed = "F3000"
 
 with open(sys.argv[1], "r") as ins:
     f2 = open(sys.argv[2], 'w')
+    x = 1
     for line in ins:
         match1 = re.match(r"G1(F.*)", line)
         match2 = re.match(r"G1([XYZ].*)(F.*)", line)
         match3 = re.match(r"G0(F.*)", line)
         match4 = re.match(r"G0([XYZ].*)(F.*)?", line)
-        match5 = re.match(r"([XYZ].*)(F.*)?", line)
+        match5 = re.match(r"([XYZ].*)(F.*)", line)
+        match6 = re.match(r"([XYZ].*)", line)
 
         if match1:
             # print('1: '+line)
@@ -35,6 +36,7 @@ with open(sys.argv[1], "r") as ins:
                 G1Speed = match2.group(2)
             currentCommand = "G1"
             coord = match2.group(1)
+            coord = coord.replace("X", " X").replace("Y", " Y").replace('Z', ' Z').replace('F', ' F')
             l = currentCommand + coord
 
         elif match3:
@@ -50,10 +52,11 @@ with open(sys.argv[1], "r") as ins:
                 G0Speed = match4.group(2)
             currentCommand = "G0"
             coord = match4.group(1)
+            coord = coord.replace("X", " X").replace("Y", " Y").replace('Z', ' Z').replace('F', ' F')
             l = currentCommand + coord
 
         elif match5:
-            # print('5: ' + line)
+            # print('5:' + str(x) + ': ' + match5.group(1))
             if match5.group(2):
                 if currentCommand == "G0":
                     G0Speed = match5.group(2)
@@ -63,6 +66,11 @@ with open(sys.argv[1], "r") as ins:
             coord = match5.group(1)
             l = currentCommand + coord.replace("X", " X").replace("Y", " Y").replace('Z', ' Z').replace('F', ' F')
             # print(l)
+        elif match6:
+            # print('6:' + str(x) + ': ' + match5.group(1))
+            coord = match6.group(1)
+            l = currentCommand + coord.replace("X", " X").replace("Y", " Y").replace('Z', ' Z')
+
         else:
             l = False
 
@@ -72,9 +80,11 @@ with open(sys.argv[1], "r") as ins:
                 speed = G0Speed
             else:
                 speed = G1Speed
-            f2.write(l.rstrip() + ' ' + "\n")
+            f2.write(l.rstrip() + ' ' + speed + "\n")
         else:
             f2.write(line)
+
+        x = x + 1
 
     f2.close()
     ins.close()
